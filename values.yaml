@@ -1,0 +1,21 @@
+# Central configuration for all services in the application stack
+
+userAuthService:
+  image:
+    repository: tush1809/user-auth-service
+    tag: "initial"
+
+dataUploadService:
+  image:
+    repository: tush1809/data-upload-service
+    tag: "initial"
+
+analyticsService:
+  image:
+    repository: tush1809/analytics-service
+    tag: "initial"
+
+frontend:
+  image:
+    repository: tush1809/frontend
+    tag: "initial"
