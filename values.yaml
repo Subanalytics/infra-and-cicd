@@ -3,18 +3,15 @@
 userAuthService:
   image:
     repository: tush1809/user-auth-service
-    tag: "initial"
-
+    tag: "ac5ba20aa5590698d6ee85fc9d038d099953c060"
 dataUploadService:
   image:
     repository: tush1809/data-upload-service
     tag: "initial"
-
 analyticsService:
   image:
     repository: tush1809/analytics-service
     tag: "initial"
-
 frontend:
   image:
     repository: tush1809/frontend
