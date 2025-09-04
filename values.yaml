@@ -7,7 +7,7 @@ userAuthService:
 dataUploadService:
   image:
     repository: tush1809/data-upload-service
-    tag: "initial"
+    tag: "01c82bd05989e3e0047874a7895fda75c29256d0"
 analyticsService:
   image:
     repository: tush1809/analytics-service
