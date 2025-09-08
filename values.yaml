@@ -3,11 +3,11 @@
 userAuthService:
   image:
     repository: tush1809/user-auth-service
-    tag: "dc0935ee0fd7d8e443ed402fd28097ea497eff6e"
+    tag: "0c1c863884e705fae3120977a52ac2b2c49a67e9"
   metadata:
-    buildDate: "2025-09-08T06:59:35Z"
-    gitSha: dc0935e
-    buildNumber: "8"
+    buildDate: "2025-09-08T07:02:50Z"
+    gitSha: 0c1c863
+    buildNumber: "9"
 dataUploadService:
   image:
     repository: tush1809/data-upload-service
