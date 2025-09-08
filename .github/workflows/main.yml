@@ -23,9 +23,8 @@ jobs:
       - name: Setup kubectl
         run: |
           echo "Setting up Kubernetes context"
-          # Optionally load kubeconfig from secret
           mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
+          echo "${{ secrets.KUBECONFIG_DATA }}" | base64 -d > $HOME/.kube/config
           kubectl get nodes
 
       # ======================
@@ -39,25 +38,4 @@ jobs:
             echo "=== Deploying $svc ==="
             
             # Create namespace if it doesn't exist
-            if ! kubectl get namespace $NAMESPACE >/dev/null 2>&1; then
-              kubectl create namespace $NAMESPACE
-            fi
-
-            # Install or upgrade using Helm
-            helm upgrade --install $svc ./charts/$svc \
-              --namespace $NAMESPACE \
-              --set image.repository=${{ secrets.DOCKER_USERNAME }}/$svc \
-              --set image.tag=latest \
-              --wait \
-              --timeout 300s
-
-            # Verify rollout
-            kubectl rollout status deployment/$svc -n $NAMESPACE --timeout=300s
-          done
-
-      # ======================
-      # Deployment Summary
-      # ======================
-      - name: List all deployed resources
-        run: |
-          kubectl get all -n analytics
+            if ! kubectl get namespace $NAMESPACE >/dev/null 2>
