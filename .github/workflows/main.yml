@@ -99,7 +99,7 @@ jobs:
       # Verify rollouts
       # ======================
       - name: Verify User Auth rollout
-        run: kubectl rollout status deployment/user-auth-service -n analytics
+        run: kubectl rollout status deployment/user-auth-deployment -n analytics
 
       - name: Verify Data Upload rollout
         run: kubectl rollout status deployment/data-upload-service -n analytics
