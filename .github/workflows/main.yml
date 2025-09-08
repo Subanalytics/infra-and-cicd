@@ -14,13 +14,7 @@ jobs:
       - name: Checkout infra
         uses: actions/checkout@v4
 
-      # ======================
-      # Bootstrap Kubernetes prereqs
-      # ======================
-      - name: Bootstrap Kubernetes prereqs
-        run: |
-          chmod +x install-kube.sh
-          ./install-kube.sh
+
 
       # ======================
       # Checkout each microservice repo
@@ -63,11 +57,10 @@ jobs:
       - name: Collect manifests
         run: |
           mkdir all-k8s
-          cp -r kubernetes/* all-k8s/ || true
-          cp -r user-auth-service/kubernetes/* all-k8s/ || true
-          cp -r data-upload-service/kubernetes/* all-k8s/ || true
-          cp -r analytics-service/kubernetes/* all-k8s/ || true
-          cp -r frontend/kubernetes/* all-k8s/ || true
+          cp -r user-auth-service/k8s/* all-k8s/ || true
+          cp -r data-upload-service/k8s/* all-k8s/ || true
+          cp -r analytics-service/k8s/* all-k8s/ || true
+          cp -r frontend/k8s/* all-k8s/ || true
 
       # ======================
       # Install Helm
@@ -89,15 +82,6 @@ jobs:
             --set grafana.service.type=NodePort \
             --set grafana.service.nodePort=32000
 
-      # ======================
-      # Configure AWS/K8s secrets (if needed)
-      # ======================
-      - name: Configure AWS Secret
-        run: |
-          kubectl delete secret aws-credentials -n analytics --ignore-not-found
-          kubectl create secret generic aws-credentials -n analytics \
-            --from-literal=accessKey=${{ secrets.AWS_ACCESS_KEY_ID }} \
-            --from-literal=secretKey=${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       # ======================
       # Apply all manifests
