@@ -1,0 +1,5 @@
+apiVersion: v2
+name: infra-and-cicd
+description: Helm chart for analytics platform
+version: 0.1.0
+appVersion: "1.0"
