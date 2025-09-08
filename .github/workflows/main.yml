@@ -1,0 +1,63 @@
+name: CD - Helm Deploy Microservices
+
+on:
+  push:
+    paths:
+      - 'charts/**'
+      - '.github/workflows/cd-helm.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy-microservices:
+    runs-on: self-hosted
+    steps:
+      # ======================
+      # Checkout Infra Repo
+      # ======================
+      - name: Checkout infra repo
+        uses: actions/checkout@v4
+
+      # ======================
+      # Setup Kubernetes context
+      # ======================
+      - name: Setup kubectl
+        run: |
+          echo "Setting up Kubernetes context"
+          # Optionally load kubeconfig from secret
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
+          kubectl get nodes
+
+      # ======================
+      # Deploy Microservices via Helm
+      # ======================
+      - name: Deploy all microservices
+        run: |
+          MICROSERVICES=("user-auth-service" "data-upload-service" "analytics-service" "frontend-service")
+          NAMESPACE="analytics"
+          for svc in "${MICROSERVICES[@]}"; do
+            echo "=== Deploying $svc ==="
+            
+            # Create namespace if it doesn't exist
+            if ! kubectl get namespace $NAMESPACE >/dev/null 2>&1; then
+              kubectl create namespace $NAMESPACE
+            fi
+
+            # Install or upgrade using Helm
+            helm upgrade --install $svc ./charts/$svc \
+              --namespace $NAMESPACE \
+              --set image.repository=${{ secrets.DOCKER_USERNAME }}/$svc \
+              --set image.tag=latest \
+              --wait \
+              --timeout 300s
+
+            # Verify rollout
+            kubectl rollout status deployment/$svc -n $NAMESPACE --timeout=300s
+          done
+
+      # ======================
+      # Deployment Summary
+      # ======================
+      - name: List all deployed resources
+        run: |
+          kubectl get all -n analytics
