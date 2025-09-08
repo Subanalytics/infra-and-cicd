@@ -1,41 +1,124 @@
-name: CD - Helm Deploy Microservices
+name: CD - Hybrid Deployment (Analytics Project)
 
 on:
-  push:
-    paths:
-      - 'charts/**'
-      - '.github/workflows/cd-helm.yml'
-  workflow_dispatch:
+  workflow_dispatch:   # one-click manual deploy
 
 jobs:
-  deploy-microservices:
+  deploy:
     runs-on: self-hosted
+
     steps:
       # ======================
-      # Checkout Infra Repo
+      # Checkout infra repo (this one)
       # ======================
-      - name: Checkout infra repo
+      - name: Checkout infra
         uses: actions/checkout@v4
 
       # ======================
-      # Setup Kubernetes context
+      # Bootstrap Kubernetes prereqs
       # ======================
-      # - name: Setup kubectl
-      #   run: |
-      #     echo "Setting up Kubernetes context"
-      #     mkdir -p $HOME/.kube
-      #     echo "${{ secrets.KUBECONFIG_DATA }}" | base64 -d > $HOME/.kube/config
-      #     kubectl get nodes
+      - name: Bootstrap Kubernetes prereqs
+        run: |
+          chmod +x install-kube.sh
+          ./install-kube.sh
 
       # ======================
-      # Deploy Microservices via Helm
+      # Checkout each microservice repo
       # ======================
-      - name: Deploy all microservices
+      - name: Checkout User Auth Service
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/user-auth-service
+          token: ${{ secrets.GH_PAT }}
+          ref: main
+          path: user-auth-service
+
+      - name: Checkout Data Upload Service
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/data-upload-service
+          token: ${{ secrets.GH_PAT }}
+          ref: main
+          path: data-upload-service
+
+      - name: Checkout Analytics Service
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/analytics-service
+          token: ${{ secrets.GH_PAT }}
+          ref: main
+          path: analytics-service
+
+      - name: Checkout Frontend
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/frontend
+          token: ${{ secrets.GH_PAT }}
+          ref: main
+          path: frontend
+
+      # ======================
+      # Collect all manifests
+      # ======================
+      - name: Collect manifests
         run: |
-          MICROSERVICES=("user-auth-service" "data-upload-service" "analytics-service" "frontend-service")
-          NAMESPACE="analytics"
-          for svc in "${MICROSERVICES[@]}"; do
-            echo "=== Deploying $svc ==="
-            
-            # Create namespace if it doesn't exist
-            if ! kubectl get namespace $NAMESPACE >/dev/null 2>
+          mkdir all-k8s
+          cp -r kubernetes/* all-k8s/ || true
+          cp -r user-auth-service/kubernetes/* all-k8s/ || true
+          cp -r data-upload-service/kubernetes/* all-k8s/ || true
+          cp -r analytics-service/kubernetes/* all-k8s/ || true
+          cp -r frontend/kubernetes/* all-k8s/ || true
+
+      # ======================
+      # Install Helm
+      # ======================
+      - name: Install Helm
+        run: |
+          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+          helm version
+
+      # ======================
+      # Install Prometheus + Grafana via Helm
+      # ======================
+      - name: Install monitoring stack
+        run: |
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo update
+          helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
+            --namespace monitoring --create-namespace \
+            --set grafana.service.type=NodePort \
+            --set grafana.service.nodePort=32000
+
+      # ======================
+      # Configure AWS/K8s secrets (if needed)
+      # ======================
+      - name: Configure AWS Secret
+        run: |
+          kubectl delete secret aws-credentials -n analytics --ignore-not-found
+          kubectl create secret generic aws-credentials -n analytics \
+            --from-literal=accessKey=${{ secrets.AWS_ACCESS_KEY_ID }} \
+            --from-literal=secretKey=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # ======================
+      # Apply all manifests
+      # ======================
+      - name: Apply Kubernetes manifests
+        run: kubectl apply -R -f all-k8s/ -n analytics
+
+      - name: Wait for resources to appear
+        run: sleep 20
+
+      # ======================
+      # Verify rollouts
+      # ======================
+      - name: Verify User Auth rollout
+        run: kubectl rollout status deployment/user-auth-service -n analytics
+
+      - name: Verify Data Upload rollout
+        run: kubectl rollout status deployment/data-upload-service -n analytics
+
+      - name: Verify Analytics rollout
+        run: kubectl rollout status deployment/analytics-service -n analytics
+
+      - name: Verify Frontend rollout
+        run: kubectl rollout status deployment/frontend -n analytics
