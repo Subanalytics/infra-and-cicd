@@ -81,7 +81,10 @@ jobs:
             --namespace monitoring --create-namespace \
             --set grafana.service.type=NodePort \
             --set grafana.service.nodePort=32000
-
+      
+      - name: Create analytics namespace
+        run: |
+          kubectl create namespace analytics --dry-run=client -o yaml | kubectl apply -f -
 
       # ======================
       # Apply all manifests
