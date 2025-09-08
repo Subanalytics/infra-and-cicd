@@ -102,10 +102,10 @@ jobs:
         run: kubectl rollout status deployment/user-auth-deployment -n analytics
 
       - name: Verify Data Upload rollout
-        run: kubectl rollout status deployment/data-upload-service -n analytics
+        run: kubectl rollout status deployment/data-upload-deployment -n analytics
 
       - name: Verify Analytics rollout
-        run: kubectl rollout status deployment/analytics-service -n analytics
+        run: kubectl rollout status deployment/analytics-deployment -n analytics
 
       - name: Verify Frontend rollout
-        run: kubectl rollout status deployment/frontend -n analytics
+        run: kubectl rollout status deployment/frontend-deployment -n analytics
