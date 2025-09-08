@@ -20,12 +20,12 @@ jobs:
       # ======================
       # Setup Kubernetes context
       # ======================
-      - name: Setup kubectl
-        run: |
-          echo "Setting up Kubernetes context"
-          mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBECONFIG_DATA }}" | base64 -d > $HOME/.kube/config
-          kubectl get nodes
+      # - name: Setup kubectl
+      #   run: |
+      #     echo "Setting up Kubernetes context"
+      #     mkdir -p $HOME/.kube
+      #     echo "${{ secrets.KUBECONFIG_DATA }}" | base64 -d > $HOME/.kube/config
+      #     kubectl get nodes
 
       # ======================
       # Deploy Microservices via Helm
