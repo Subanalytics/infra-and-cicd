@@ -27,16 +27,14 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             https://api.github.com/orgs/USER-POLYGLOT/actions/runners/registration-token \
             | jq -r .token)
-
           echo "RUNNER_TOKEN=$TOKEN" >> $GITHUB_ENV
 
       - name: Terraform Init
-        working-directory: Terraform
+        working-directory: Terraform   # <-- Updated to match your folder
         run: terraform init
 
       - name: Terraform Apply
-        working-directory: terraform
+        working-directory: Terraform   # <-- Updated to match your folder
         run: terraform apply -auto-approve
         env:
-
-          TF_VAR_runner_token: ${{ env.RUNNER_TOKEN }}
+          TF_VAR_runner_token: ${{ env.RUNNER_T
