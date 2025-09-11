@@ -22,7 +22,11 @@ jobs:
       - name: Bootstrap Kubernetes prereqs
         run: |
           chmod +x kubem.sh
-          ./kubem.sh
+          if ! kubectl cluster-info >/dev/null 2>&1; then
+            ./kubem.sh
+          else
+             echo "Kubernetes cluster already running, skipping init."
+          fi
 
 
       # ======================
