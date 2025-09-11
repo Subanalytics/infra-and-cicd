@@ -11,9 +11,9 @@ variable "instance_type" {
 }
 
 variable "ami_id" {
-  description = "AMI "
+  description = "AMI ID for the EC2 instance"
   type        = string
-  default     = "ami-04f59c565deeb2199" 
+  default     = "ami-04f59c565deeb2199"
 }
 
 variable "key_name" {
@@ -21,8 +21,10 @@ variable "key_name" {
   type        = string
   default     = "tusharnv" # 🔧 replace with your key pair name
 }
+
 variable "runner_token" {
   description = "GitHub token for runner registration"
   type        = string
   sensitive   = true
 }
+
