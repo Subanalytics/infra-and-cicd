@@ -11,7 +11,7 @@ rm actions-runner.tar.gz
 sudo chown -R ubuntu:ubuntu /home/ubuntu/actions-runner
 
 sudo -u ubuntu ./config.sh --unattended \
-  --url https://github.com/SUBANALYTICS \
+  --url https://github.com/Subanalytics \
   --token "${runner_token}" \
   --name ec2-org-runner \
   --labels self-hosted,linux,ec2 \
