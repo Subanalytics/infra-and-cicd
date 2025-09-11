@@ -5,6 +5,7 @@ resource "aws_instance" "test_instance" {
 
   user_data = <<-EOF
 #!/bin/bash
+set -e
 sudo apt-get update -y
 sudo apt-get install -y curl tar jq
 
@@ -19,15 +20,17 @@ rm actions-runner.tar.gz
 
 sudo chown -R ubuntu:ubuntu /home/ubuntu/actions-runner
 
-# Configure the runner
+# Configure the runner for the correct repo
+cd /home/ubuntu/actions-runner
 sudo -u ubuntu ./config.sh --unattended \
-  --url https://github.com/SUBANALYTICS \
+  --url https://github.com/Subanalytics/infra-and-cicd \
   --token "${var.runner_token}" \
   --name ec2-org-runner \
   --labels self-hosted,linux,ec2 \
   --work "_work"
 
-# Install and start service
+# Install and start service (ensure in correct dir)
+cd /home/ubuntu/actions-runner
 sudo ./svc.sh install
 sudo ./svc.sh start
 EOF
