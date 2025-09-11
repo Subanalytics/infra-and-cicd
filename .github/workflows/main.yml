@@ -1,7 +1,12 @@
 name: CD - Hybrid Deployment (Analytics Project)
 
 on:
+  workflow_run:
+    workflows: [Setup Infra and Deploy GitHub Runner]
+    types:
+      - completed
   workflow_dispatch:   # one-click manual deploy
+  # one-click manual deploy
 
 jobs:
   deploy:
@@ -67,30 +72,30 @@ jobs:
       # ======================
       - name: Install Helm
         run: |
-          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-          helm version
+          sudo -u ubuntu curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+          sudo -u ubuntu helm version
 
       # ======================
       # Install Prometheus + Grafana via Helm
       # ======================
       - name: Install monitoring stack
         run: |
-          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-          helm repo update
-          helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
+          sudo -u ubuntu helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          sudo -u ubuntu helm repo update
+          sudo -u ubuntu helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
             --namespace monitoring --create-namespace \
             --set grafana.service.type=NodePort \
             --set grafana.service.nodePort=32000
       
       - name: Create analytics namespace
         run: |
-          kubectl create namespace analytics --dry-run=client -o yaml | kubectl apply -f -
+          sudo -u ubuntu kubectl create namespace analytics --dry-run=client -o yaml | kubectl apply -f -
 
       # ======================
       # Apply all manifests
       # ======================
       - name: Apply Kubernetes manifests
-        run: kubectl apply -R -f all-k8s/ -n analytics
+        run: sudo -u ubuntu kubectl apply -R -f all-k8s/ -n analytics
 
       - name: Wait for resources to appear
         run: sleep 20
@@ -99,13 +104,13 @@ jobs:
       # Verify rollouts
       # ======================
       - name: Verify User Auth rollout
-        run: kubectl rollout status deployment/user-auth-deployment -n analytics
+        run: sudo -u ubuntu kubectl rollout status deployment/user-auth-deployment -n analytics
 
       - name: Verify Data Upload rollout
-        run: kubectl rollout status deployment/data-upload-deployment -n analytics
+        run: sudo -u ubuntu kubectl rollout status deployment/data-upload-deployment -n analytics
 
       - name: Verify Analytics rollout
-        run: kubectl rollout status deployment/analytics-deployment -n analytics
+        run: sudo -u ubuntu kubectl rollout status deployment/analytics-deployment -n analytics
 
       - name: Verify Frontend rollout
-        run: kubectl rollout status deployment/frontend-deployment -n analytics
+        run: sudo -u ubuntu kubectl rollout status deployment/frontend-deployment -n analytics
