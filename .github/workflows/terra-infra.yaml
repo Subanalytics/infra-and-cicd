@@ -21,20 +21,21 @@ jobs:
 
       - name: Get short-lived runner token
         id: get_token
+        shell: bash
         run: |
           TOKEN=$(curl -sX POST \
-            -H "Authorization: Bearer ${{ secrets.ORG_RUNNER_PAT }}" \
+            -H "Authorization: Bearer ${{ secrets.GH_PAT }}" \
             -H "Accept: application/vnd.github+json" \
             https://api.github.com/orgs/USER-POLYGLOT/actions/runners/registration-token \
             | jq -r .token)
           echo "RUNNER_TOKEN=$TOKEN" >> $GITHUB_ENV
 
       - name: Terraform Init
-        working-directory: Terraform   # <-- Updated to match your folder
+        working-directory: Terraform   # Matches your repo folder
         run: terraform init
 
       - name: Terraform Apply
-        working-directory: Terraform   # <-- Updated to match your folder
+        working-directory: Terraform   # Matches your repo folder
         run: terraform apply -auto-approve
         env:
-          TF_VAR_runner_token: ${{ env.RUNNER_T
+          TF_VAR_runner_token: ${{ env.RUNNER_TOKEN }}
