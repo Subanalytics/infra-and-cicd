@@ -6,7 +6,6 @@ on:
     types:
       - completed
   workflow_dispatch:   # one-click manual deploy
-  # one-click manual deploy
 
 jobs:
   deploy:
@@ -19,15 +18,23 @@ jobs:
       - name: Checkout infra
         uses: actions/checkout@v4
 
+      # ======================
+      # Kubernetes bootstrap or reuse existing config
+      # ======================
       - name: Bootstrap Kubernetes prereqs
         run: |
           chmod +x kubem.sh
-          if ! kubectl cluster-info >/dev/null 2>&1; then
+          if ! sudo -u ubuntu kubectl cluster-info >/dev/null 2>&1; then
+            echo "Cluster not found, running init..."
             ./kubem.sh
           else
-             echo "Kubernetes cluster already running, skipping init."
+            echo "Cluster already running, reusing kubeconfig."
           fi
 
+          # Always make sure kubeconfig is set
+          sudo mkdir -p /home/ubuntu/.kube
+          sudo cp /etc/kubernetes/admin.conf /home/ubuntu/.kube/config
+          sudo chown ubuntu:ubuntu /home/ubuntu/.kube/config
 
       # ======================
       # Checkout each microservice repo
