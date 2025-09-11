@@ -31,11 +31,12 @@ jobs:
           echo "RUNNER_TOKEN=$TOKEN" >> $GITHUB_ENV
 
       - name: Terraform Init
-        working-directory: terraform
+        working-directory: Terraform
         run: terraform init
 
       - name: Terraform Apply
         working-directory: terraform
         run: terraform apply -auto-approve
         env:
+
           TF_VAR_runner_token: ${{ env.RUNNER_TOKEN }}
