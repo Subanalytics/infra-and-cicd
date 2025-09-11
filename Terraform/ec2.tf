@@ -23,7 +23,7 @@ sudo chown -R ubuntu:ubuntu /home/ubuntu/actions-runner
 # Configure the runner for the correct repo
 cd /home/ubuntu/actions-runner
 sudo -u ubuntu ./config.sh --unattended \
-  --url https://github.com/Subanalytics/infra-and-cicd \
+  --url https://github.com/Subanalytics \
   --token "${var.runner_token}" \
   --name ec2-org-runner \
   --labels self-hosted,linux,ec2 \
