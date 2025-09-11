@@ -19,6 +19,10 @@ jobs:
       - name: Checkout infra
         uses: actions/checkout@v4
 
+      - name: Bootstrap Kubernetes prereqs
+        run: |
+          chmod +x kubem.sh
+          ./kubem.sh
 
 
       # ======================
