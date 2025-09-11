@@ -19,7 +19,7 @@ variable "ami_id" {
 variable "key_name" {
   description = "AWS key pair name to SSH into the instance"
   type        = string
-  default     = "tusharnvc" # 🔧 replace with your key pair name
+  default     = "tusharnv" # 🔧 replace with your key pair name
 }
 variable "runner_token" {
   description = "GitHub token for runner registration"
