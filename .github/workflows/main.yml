@@ -24,6 +24,8 @@ jobs:
       - name: Bootstrap Kubernetes prereqs
         run: |
           chmod +x kubem.sh
+
+          # Check if cluster is running
           if ! sudo -u ubuntu kubectl cluster-info >/dev/null 2>&1; then
             echo "Cluster not found, running init..."
             ./kubem.sh
@@ -31,10 +33,13 @@ jobs:
             echo "Cluster already running, reusing kubeconfig."
           fi
 
-          # Always make sure kubeconfig is set
+          # Always refresh kubeconfig for ubuntu user
           sudo mkdir -p /home/ubuntu/.kube
           sudo cp /etc/kubernetes/admin.conf /home/ubuntu/.kube/config
           sudo chown ubuntu:ubuntu /home/ubuntu/.kube/config
+
+          # Quick cluster check
+          sudo -u ubuntu kubectl cluster-info
 
       # ======================
       # Checkout each microservice repo
@@ -102,9 +107,12 @@ jobs:
             --set grafana.service.type=NodePort \
             --set grafana.service.nodePort=32000
       
+      # ======================
+      # Create analytics namespace
+      # ======================
       - name: Create analytics namespace
         run: |
-          sudo -u ubuntu kubectl create namespace analytics --dry-run=client -o yaml | kubectl apply -f -
+          sudo -u ubuntu kubectl create namespace analytics --dry-run=client -o yaml | sudo -u ubuntu kubectl apply -f -
 
       # ======================
       # Apply all manifests
